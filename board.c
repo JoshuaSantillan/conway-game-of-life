@@ -1,7 +1,7 @@
 /**
  * Assignment: life
- * Name :TODO
- * PID: TODO
+ * Name : Joshua Santillan
+ * PID: A16620670
  * Class: UCSD CSE30-WI21
  *
  */
@@ -29,7 +29,48 @@
  * - return the boards pointer if successfull or NULL ptr otherwise
  */
 boards_t * createBoard(char *initFileName){
-  // TODO: 
+	boards_t* board = malloc(sizeof(boards_t));
+	board->gen = 0;
+	
+	FILE *file;
+	if((file = fopen(initFileName, "r")) == NULL)
+		return NULL;
+	fscanf(file, "%d", &(board->numRows));
+	fscanf(file, "%d", &(board->numCols));
+	
+	board->bufferA = (belem*)malloc(sizeof(belem) * board->numRows * board->numCols);
+	board->bufferB = (belem*)malloc(sizeof(belem) * board->numRows * board->numCols);
+	board->currentBuffer = board->bufferA;	
+	board->nextBuffer = board->bufferB;
+
+	clearBoards(board);
+
+	int cell_x, cell_y;
+	int index; 
+	while(fscanf(file, "%d %d", &cell_x, &cell_y) > 0){
+		index =	getIndex(board, cell_x, cell_y);
+		board->currentBuffer[index] = 1;
+	}
+	uint32_t i;
+	for(i = 0; i < board->numCols; i++){
+		index =	getIndex(board, 0, i);
+		board->currentBuffer[index] = 0;
+	}	
+	for(i = 0; i < board->numCols; i++){
+		index =	getIndex(board, board->numRows-1, i);
+		board->currentBuffer[index] = 0;
+	}	
+	for(i = 0; i < board->numRows; i++){
+		index =	getIndex(board, i, 0);
+		board->currentBuffer[index] = 0;
+	}	
+	for(i = 0; i < board->numRows; i++){
+		index =	getIndex(board, i, board->numCols-1);
+		board->currentBuffer[index] = 0;
+	}
+	
+	fclose(file);
+	return board;
 }
 
 
@@ -38,21 +79,33 @@ boards_t * createBoard(char *initFileName){
  * delete a board
  */
 void deleteBoard(boards_t **bptrPtr){
-  // TODO:
+	free((*bptrPtr)->bufferA);
+	free((*bptrPtr)->bufferB);
+	free(*bptrPtr);
+	*bptrPtr = NULL;
 }
 
 /**
  * set all the belems in both buffers to 0
  */
 void clearBoards(boards_t *self){
-  // TODO:
+	uint32_t i;
+	uint32_t j;
+	for(i = 0; i < self->numCols; i++){
+		for(j = 0; j < self->numRows; j++){
+			self->bufferA[getIndex(self,j,i)] = 0;
+			self->bufferB[getIndex(self,j,i)] = 0;
+		}
+	}
 }
 
 /**
  * swap the current and next buffers
  */
 void swapBuffers(boards_t *self){
-  // TODO:
+	belem *temp = self->currentBuffer;
+	self->currentBuffer = self->nextBuffer;
+	self->nextBuffer = temp;
 }
 
 
@@ -60,6 +113,6 @@ void swapBuffers(boards_t *self){
  * get a cell index
  */
 int getIndex(boards_t *self, int row, int col){
-  // TODO:
+	return row * self->numCols + col;
 }
   
